@@ -15,6 +15,7 @@ import {
 } from 'react-native-cycurid-sdk';
 
 import {MERCHANT_API_KEY, MERCHANT_SECRET_KEY, USER_ID} from '@env';
+
 export default function App() {
   const [livenessResult, setLivenessResult] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -25,8 +26,12 @@ export default function App() {
   const userID = USER_ID || 'default_user_id';
 
   const handleButtonPress = async (type: CycurIdType) => {
+    if (isLoading) {
+      return;
+    }
+
     setIsLoading(true);
-    setActiveButton(type);
+    setActiveButton(type); // Track which button is loading
     const config = new CycuridConfig(apiKey, secretKey, userID);
 
     try {
@@ -63,11 +68,11 @@ export default function App() {
             style={[
               styles.button,
               {backgroundColor: color},
-              isLoading && type === activeButton ? styles.disabledButton : {},
+              isLoading ? styles.disabledButton : {},
             ]}
             onPress={() => handleButtonPress(type)}
-            disabled={isLoading && type === activeButton}>
-            {isLoading && type === activeButton ? (
+            disabled={isLoading}>
+            {isLoading && activeButton === type ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
               <Text style={styles.buttonText}>{label}</Text>
@@ -112,7 +117,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   disabledButton: {
-    opacity: 0.7,
+    opacity: 0.5, // Visually indicate the button is disabled
   },
   buttonText: {
     color: 'white',
@@ -120,7 +125,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   resultContainer: {
-    maxHeight: 200, // Limit height so it doesn’t overflow the screen
+    maxHeight: 200,
     width: '90%',
     backgroundColor: '#f5f5f5',
     padding: 10,
@@ -129,6 +134,6 @@ const styles = StyleSheet.create({
   resultText: {
     fontSize: 14,
     color: '#333',
-    fontFamily: 'monospace', // Optional: Makes JSON look like code
+    fontFamily: 'monospace',
   },
 });
