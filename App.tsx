@@ -22,7 +22,7 @@ export default function App() {
   const [livenessResult, setLivenessResult] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeButton, setActiveButton] = useState<CycurIdType | null>(null);
-  const [userID, setUserID] = useState<string>(''); // Store user input
+  const [userID, setUserID] = useState<string>('');
 
   const apiKey = MERCHANT_API_KEY || 'default_api_key';
   const secretKey = MERCHANT_SECRET_KEY || 'default_secret_key';
@@ -79,7 +79,7 @@ export default function App() {
             style={[
               styles.button,
               {backgroundColor: color},
-              isLoading ? styles.disabledButton : {}, // Disable all buttons while loading
+              isLoading ? styles.disabledButton : {},
             ]}
             onPress={() => handleButtonPress(type)}
             disabled={isLoading}>
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   disabledButton: {
-    opacity: 0.5, // Visual cue that button is disabled
+    opacity: 0.5,
   },
   buttonText: {
     color: 'white',
