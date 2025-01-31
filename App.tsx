@@ -41,7 +41,7 @@ export default function App() {
       console.error('Error:', error);
     } finally {
       setIsLoading(false);
-      setActiveButton(null); // Reset active button after the process is completed
+      setActiveButton(null);
     }
   };
 
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   disabledButton: {
-    opacity: 0.5, // Visually indicate the button is disabled
+    opacity: 0.5,
   },
   buttonText: {
     color: 'white',
