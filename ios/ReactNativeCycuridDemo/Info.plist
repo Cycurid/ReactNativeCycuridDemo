@@ -48,5 +48,14 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NFCReaderUsageDescription</key>
+	<string>Access is required to scan NFC tags for reading data.</string>
+	<key>com.apple.developer.nfc.readersession.iso7816.select-identifiers</key>
+    <array>
+        <string>com.apple.developer.nfc.readersession.iso7816.select-identifiers</string>
+        <string>A0000002471001</string>
+    </array>
+    <key>NSCameraUsageDescription</key>
+    <string>We only collect facemap binary data. This data is only use to re-authenticate when they try to login to the app. It&apos;s like a password. But this data changes every time the user logs in</string>
 </dict>
 </plist>

@@ -1,118 +1,128 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, {useState} from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
+  TouchableOpacity,
   Text,
-  useColorScheme,
   View,
+  StyleSheet,
+  Button,
+  ActivityIndicator,
 } from 'react-native';
 
 import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+  initCycurid,
+  CycurIdType,
+  CycuridConfig,
+} from 'react-native-cycurid-sdk';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+import {MERCHANT_API_KEY, MERCHANT_SECRET_KEY} from '@env';
+export default function App() {
+  const [livenessResult, setLivenessResult] = useState<string | null>(null);
+  const [userCount, setUserCount] = useState<number>(1);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [activeButton, setActiveButton] = useState<CycurIdType | null>(null);
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  const updateUserID = () => {
+    setUserCount(prev => prev + 1);
+  };
+
+  const handleButtonPress = async (type: CycurIdType) => {
+    setIsLoading(true);
+    setActiveButton(type);
+    const config = new CycuridConfig(
+      `${MERCHANT_API_KEY}`,
+      `${MERCHANT_SECRET_KEY}`,
+      `User_${userCount}`,
+    );
+
+    try {
+      const result = await initCycurid(type, config);
+      setLivenessResult(result);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setIsLoading(false);
+      setActiveButton(null); // Reset active button after the process is completed
+    }
+  };
+
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
+    <View style={styles.container}>
+      <Text>Current User ID: User_{userCount}</Text>
+      <Button title="Generate New User ID" onPress={updateUserID} />
+      <View style={styles.buttonContainer}>
+        {[
+          {type: CycurIdType.isHuman, label: 'Is Human', color: 'blue'},
+          {type: CycurIdType.onboarding, label: 'Onboarding', color: 'orange'},
           {
-            color: isDarkMode ? Colors.white : Colors.black,
+            type: CycurIdType.identification,
+            label: 'Identification',
+            color: 'red',
           },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
           {
-            color: isDarkMode ? Colors.light : Colors.dark,
+            type: CycurIdType.dataExtraction,
+            label: 'Data Extraction',
+            color: 'green',
           },
-        ]}>
-        {children}
-      </Text>
+        ].map(({type, label, color}) => (
+          <TouchableOpacity
+            key={type}
+            style={[
+              styles.button,
+              {backgroundColor: color},
+              isLoading && type === activeButton ? styles.disabledButton : {},
+            ]}
+            onPress={() => handleButtonPress(type)}
+            disabled={isLoading && type === activeButton}>
+            {isLoading && type === activeButton ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>{label}</Text>
+            )}
+          </TouchableOpacity>
+        ))}
+      </View>
+      {livenessResult && (
+        <Text style={styles.resultText}>Result: {livenessResult}</Text>
+      )}
     </View>
   );
 }
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
-
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  buttonContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginBottom: 20,
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  button: {
+    width: 200,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 5,
+    alignItems: 'center',
+    marginVertical: 8,
   },
-  highlight: {
-    fontWeight: '700',
+  disabledButton: {
+    opacity: 0.7,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  resultText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginVertical: 10,
   },
 });
-
-export default App;
