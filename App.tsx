@@ -95,9 +95,7 @@ export default function App() {
       {livenessResult && (
         <ScrollView style={styles.resultContainer}>
           <Text style={styles.resultText}>Result:</Text>
-          <Text style={styles.resultText}>
-            {JSON.stringify(livenessResult, null, 2)}
-          </Text>
+          <Text style={styles.resultText}>{livenessResult}</Text>
         </ScrollView>
       )}
     </View>
