@@ -6,6 +6,8 @@ import {
   StyleSheet,
   ActivityIndicator,
   ScrollView,
+  TextInput,
+  Alert,
 } from 'react-native';
 
 import {
@@ -14,17 +16,23 @@ import {
   CycuridConfig,
 } from 'react-native-cycurid-sdk';
 
-import {MERCHANT_API_KEY, MERCHANT_SECRET_KEY, USER_ID} from '@env';
+import {MERCHANT_API_KEY, MERCHANT_SECRET_KEY} from '@env';
+
 export default function App() {
   const [livenessResult, setLivenessResult] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeButton, setActiveButton] = useState<CycurIdType | null>(null);
+  const [userID, setUserID] = useState<string>(''); // Store user input
 
   const apiKey = MERCHANT_API_KEY || 'default_api_key';
   const secretKey = MERCHANT_SECRET_KEY || 'default_secret_key';
-  const userID = USER_ID || 'default_user_id';
 
   const handleButtonPress = async (type: CycurIdType) => {
+    if (!userID.trim()) {
+      Alert.alert('Invalid Input', 'Please enter a valid User ID.');
+      return;
+    }
+
     setIsLoading(true);
     setActiveButton(type);
     const config = new CycuridConfig(apiKey, secretKey, userID);
@@ -36,13 +44,21 @@ export default function App() {
       console.error('Error:', error);
     } finally {
       setIsLoading(false);
-      setActiveButton(null); // Reset active button after the process is completed
+      setActiveButton(null);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text>Current User ID: {userID}</Text>
+      <Text style={styles.label}>Enter User ID:</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Enter unique User ID"
+        value={userID}
+        onChangeText={setUserID}
+        editable={!isLoading} // Prevents editing while loading
+      />
+
       <View style={styles.buttonContainer}>
         {[
           {type: CycurIdType.isHuman, label: 'Is Human', color: 'blue'},
@@ -63,10 +79,10 @@ export default function App() {
             style={[
               styles.button,
               {backgroundColor: color},
-              isLoading && type === activeButton ? styles.disabledButton : {},
+              isLoading ? styles.disabledButton : {}, // Disable all buttons while loading
             ]}
             onPress={() => handleButtonPress(type)}
-            disabled={isLoading && type === activeButton}>
+            disabled={isLoading}>
             {isLoading && type === activeButton ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
@@ -75,6 +91,7 @@ export default function App() {
           </TouchableOpacity>
         ))}
       </View>
+
       {livenessResult && (
         <ScrollView style={styles.resultContainer}>
           <Text style={styles.resultText}>Result:</Text>
@@ -92,6 +109,21 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  input: {
+    width: '90%',
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    marginBottom: 15,
+    backgroundColor: '#fff',
   },
   buttonContainer: {
     flexDirection: 'column',
@@ -112,7 +144,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   disabledButton: {
-    opacity: 0.7,
+    opacity: 0.5, // Visual cue that button is disabled
   },
   buttonText: {
     color: 'white',
@@ -120,7 +152,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   resultContainer: {
-    maxHeight: 200, // Limit height so it doesn’t overflow the screen
+    maxHeight: 200,
     width: '90%',
     backgroundColor: '#f5f5f5',
     padding: 10,
@@ -129,6 +161,6 @@ const styles = StyleSheet.create({
   resultText: {
     fontSize: 14,
     color: '#333',
-    fontFamily: 'monospace', // Optional: Makes JSON look like code
+    fontFamily: 'monospace',
   },
 });
