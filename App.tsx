@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Button,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 
 import {
@@ -21,6 +22,9 @@ export default function App() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeButton, setActiveButton] = useState<CycurIdType | null>(null);
 
+  const apiKey = MERCHANT_API_KEY || 'default_api_key';
+  const secretKey = MERCHANT_SECRET_KEY || 'default_secret_key';
+
   const updateUserID = () => {
     setUserCount(prev => prev + 1);
   };
@@ -28,11 +32,7 @@ export default function App() {
   const handleButtonPress = async (type: CycurIdType) => {
     setIsLoading(true);
     setActiveButton(type);
-    const config = new CycuridConfig(
-      `${MERCHANT_API_KEY}`,
-      `${MERCHANT_SECRET_KEY}`,
-      `User_${userCount}`,
-    );
+    const config = new CycuridConfig(apiKey, secretKey, `User_${userCount}`);
 
     try {
       const result = await initCycurid(type, config);
@@ -82,7 +82,12 @@ export default function App() {
         ))}
       </View>
       {livenessResult && (
-        <Text style={styles.resultText}>Result: {livenessResult}</Text>
+        <ScrollView style={styles.resultContainer}>
+          <Text style={styles.resultText}>Result:</Text>
+          <Text style={styles.resultText}>
+            {JSON.stringify(livenessResult, null, 2)}
+          </Text>
+        </ScrollView>
       )}
     </View>
   );
@@ -120,9 +125,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  resultContainer: {
+    maxHeight: 200, // Limit height so it doesn’t overflow the screen
+    width: '90%',
+    backgroundColor: '#f5f5f5',
+    padding: 10,
+    borderRadius: 5,
+  },
   resultText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginVertical: 10,
+    fontSize: 14,
+    color: '#333',
+    fontFamily: 'monospace', // Optional: Makes JSON look like code
   },
 });
