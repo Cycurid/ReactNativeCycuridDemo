@@ -14,8 +14,15 @@ yarn add
 
 ## Step 2: Create a .env and add keys
 
+```env
 MERCHANT_API_KEY=YOUR_API_KEY
 MERCHANT_SECRET_KEY=YOUR_SECRET_KEY
+USER_ID=YOUR_USER_ID #Created by you, needs to be unique to each user
+
+# Needed for Android only
+GITHUB_USERNAME=YOUR_GITHUB_USERNAME
+GITHUB_TOKEN=YOUR_GITHUB_TOKEN
+```
 
 # IOS Setup:
 

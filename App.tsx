@@ -4,7 +4,6 @@ import {
   Text,
   View,
   StyleSheet,
-  Button,
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
@@ -15,24 +14,20 @@ import {
   CycuridConfig,
 } from 'react-native-cycurid-sdk';
 
-import {MERCHANT_API_KEY, MERCHANT_SECRET_KEY} from '@env';
+import {MERCHANT_API_KEY, MERCHANT_SECRET_KEY, USER_ID} from '@env';
 export default function App() {
   const [livenessResult, setLivenessResult] = useState<string | null>(null);
-  const [userCount, setUserCount] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeButton, setActiveButton] = useState<CycurIdType | null>(null);
 
   const apiKey = MERCHANT_API_KEY || 'default_api_key';
   const secretKey = MERCHANT_SECRET_KEY || 'default_secret_key';
-
-  const updateUserID = () => {
-    setUserCount(prev => prev + 1);
-  };
+  const userID = USER_ID || 'default_user_id';
 
   const handleButtonPress = async (type: CycurIdType) => {
     setIsLoading(true);
     setActiveButton(type);
-    const config = new CycuridConfig(apiKey, secretKey, `User_${userCount}`);
+    const config = new CycuridConfig(apiKey, secretKey, userID);
 
     try {
       const result = await initCycurid(type, config);
@@ -47,8 +42,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Text>Current User ID: User_{userCount}</Text>
-      <Button title="Generate New User ID" onPress={updateUserID} />
+      <Text>Current User ID: {userID}</Text>
       <View style={styles.buttonContainer}>
         {[
           {type: CycurIdType.isHuman, label: 'Is Human', color: 'blue'},
