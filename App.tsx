@@ -6,6 +6,10 @@ import {
   StyleSheet,
   ActivityIndicator,
   ScrollView,
+  TextInput,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Alert,
 } from 'react-native';
 
 import {
@@ -14,25 +18,34 @@ import {
   CycuridConfig,
 } from 'react-native-cycurid-sdk';
 
-import {MERCHANT_API_KEY, MERCHANT_SECRET_KEY, USER_ID} from '@env';
+import {MERCHANT_API_KEY, MERCHANT_SECRET_KEY} from '@env';
 
 export default function App() {
   const [livenessResult, setLivenessResult] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activeButton, setActiveButton] = useState<CycurIdType | null>(null);
+  const [userId, setUserId] = useState<string>('');
 
   const apiKey = MERCHANT_API_KEY || 'default_api_key';
   const secretKey = MERCHANT_SECRET_KEY || 'default_secret_key';
-  const userID = USER_ID || 'default_user_id';
 
   const handleButtonPress = async (type: CycurIdType) => {
     if (isLoading) {
       return;
     }
 
+    if (!userId.trim()) {
+      Alert.alert(
+        'User ID Required',
+        'Please enter a User ID. This ID will be linked to your biometrics.',
+        [{text: 'OK', onPress: () => console.log('Alert closed')}],
+      );
+      return;
+    }
+
     setIsLoading(true);
-    setActiveButton(type); // Track which button is loading
-    const config = new CycuridConfig(apiKey, secretKey, userID);
+    setActiveButton(type);
+    const config = new CycuridConfig(apiKey, secretKey, userId);
 
     try {
       const result = await initCycurid(type, config);
@@ -46,47 +59,61 @@ export default function App() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text>Current User ID: {userID}</Text>
-      <View style={styles.buttonContainer}>
-        {[
-          {type: CycurIdType.isHuman, label: 'Is Human', color: 'blue'},
-          {type: CycurIdType.onboarding, label: 'Onboarding', color: 'orange'},
-          {
-            type: CycurIdType.identification,
-            label: 'Identification',
-            color: 'red',
-          },
-          {
-            type: CycurIdType.dataExtraction,
-            label: 'Data Extraction',
-            color: 'green',
-          },
-        ].map(({type, label, color}) => (
-          <TouchableOpacity
-            key={type}
-            style={[
-              styles.button,
-              {backgroundColor: color},
-              isLoading ? styles.disabledButton : {},
-            ]}
-            onPress={() => handleButtonPress(type)}
-            disabled={isLoading}>
-            {isLoading && activeButton === type ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>{label}</Text>
-            )}
-          </TouchableOpacity>
-        ))}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>User ID:</Text>
+          <TextInput
+            style={styles.input}
+            value={userId}
+            onChangeText={setUserId}
+            placeholder="Enter User ID"
+            placeholderTextColor="#999"
+          />
+          <Text style={styles.helperText}>
+            This userid must be unique and will be linked with your biometrics. (Recommended using email.)
+          </Text>
+        </View>
+        <View style={styles.buttonContainer}>
+          {[
+            {type: CycurIdType.isHuman, label: 'Is Human', color: 'blue'},
+            {type: CycurIdType.onboarding, label: 'Onboarding', color: 'orange'},
+            {
+              type: CycurIdType.identification,
+              label: 'Identification',
+              color: 'red',
+            },
+            {
+              type: CycurIdType.dataExtraction,
+              label: 'Data Extraction',
+              color: 'green',
+            },
+          ].map(({type, label, color}) => (
+            <TouchableOpacity
+              key={type}
+              style={[
+                styles.button,
+                {backgroundColor: color},
+                isLoading ? styles.disabledButton : {},
+              ]}
+              onPress={() => handleButtonPress(type)}
+              disabled={isLoading}>
+              {isLoading && activeButton === type ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>{label}</Text>
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+        {livenessResult && (
+          <ScrollView style={styles.resultContainer}>
+            <Text style={styles.resultText}>Result:</Text>
+            <Text style={styles.resultText}>{livenessResult}</Text>
+          </ScrollView>
+        )}
       </View>
-      {livenessResult && (
-        <ScrollView style={styles.resultContainer}>
-          <Text style={styles.resultText}>Result:</Text>
-          <Text style={styles.resultText}>{livenessResult}</Text>
-        </ScrollView>
-      )}
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -133,5 +160,31 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
     fontFamily: 'monospace',
+  },
+  inputContainer: {
+    width: '90%',
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 8,
+    color: '#333',
+  },
+  input: {
+    width: '100%',
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    fontSize: 16,
+    backgroundColor: '#fff',
+    marginBottom: 4,
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+    fontStyle: 'italic',
   },
 });
